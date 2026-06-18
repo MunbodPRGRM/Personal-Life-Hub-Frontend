@@ -1,0 +1,123 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <span class="navbar-brand">Personal Life Hub</span>
+  <button class="btn-logout" (click)="logout()">ออกจากระบบ</button>
+</nav>
+
+<!-- Main -->
+<main class="main">
+  <div class="container">
+
+    <!-- Add Todo Form -->
+    <section class="add-card">
+      <h2 class="section-title">เพิ่มงานใหม่</h2>
+      <form [formGroup]="form" (ngSubmit)="addTodo()" class="add-form">
+        <div class="add-row">
+          <input
+            formControlName="title"
+            type="text"
+            class="input-title"
+            [class.is-invalid]="form.get('title')!.invalid && form.get('title')!.touched"
+            placeholder="ชื่องาน..."
+            autocomplete="off"
+          />
+          <input
+            formControlName="due_date"
+            type="date"
+            class="input-date"
+          />
+          <select formControlName="priority" class="select-priority">
+            <option value="low">ต่ำ</option>
+            <option value="medium">กลาง</option>
+            <option value="high">สูง</option>
+          </select>
+          <button type="submit" class="btn-add" [disabled]="adding()">
+            @if (adding()) {
+              <span class="spinner"></span>
+            } @else {
+              + เพิ่ม
+            }
+          </button>
+        </div>
+        <textarea
+          formControlName="description"
+          class="input-description"
+          placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)"
+          rows="2"
+        ></textarea>
+        @if (form.get('title')!.invalid && form.get('title')!.touched) {
+          <p class="field-error">กรุณาระบุชื่องาน</p>
+        }
+      </form>
+    </section>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner spinner-lg"></span>
+        <p>กำลังโหลด...</p>
+      </div>
+    } @else {
+
+      <!-- Pending todos -->
+      <section class="todo-section">
+        <h3 class="section-label">รอดำเนินการ ({{ pending().length }})</h3>
+
+        @if (pending().length === 0) {
+          <div class="empty-state">ไม่มีงานค้างอยู่ 🎉</div>
+        } @else {
+          <ul class="todo-list">
+            @for (todo of pending(); track todo.id) {
+              <li class="todo-item" [class.overdue]="isOverdue(todo)">
+                <button class="checkbox" (click)="toggleDone(todo)" title="ทำเสร็จแล้ว">
+                  <span class="checkbox-inner"></span>
+                </button>
+                <div class="todo-body">
+                  <span class="todo-title">{{ todo.title }}</span>
+                  @if (todo.description) {
+                    <span class="todo-description">{{ todo.description }}</span>
+                  }
+                  <div class="todo-meta">
+                    <span class="badge priority-{{ todo.priority }}">{{ priorityLabel(todo.priority) }}</span>
+                    @if (todo.due_date) {
+                      <span class="badge due" [class.overdue-badge]="isOverdue(todo)">
+                        {{ formatDate(todo.due_date) }}
+                        @if (isOverdue(todo)) { · เกินกำหนด }
+                      </span>
+                    }
+                  </div>
+                </div>
+                <button class="btn-delete" (click)="deleteTodo(todo.id)" title="ลบ">✕</button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <!-- Done todos -->
+      @if (done().length > 0) {
+        <section class="todo-section">
+          <h3 class="section-label done-label">เสร็จแล้ว ({{ done().length }})</h3>
+          <ul class="todo-list">
+            @for (todo of done(); track todo.id) {
+              <li class="todo-item is-done">
+                <button class="checkbox checked" (click)="toggleDone(todo)" title="ยกเลิก">
+                  <span class="checkbox-inner">✓</span>
+                </button>
+                <div class="todo-body">
+                  <span class="todo-title done-title">{{ todo.title }}</span>
+                </div>
+                <button class="btn-delete" (click)="deleteTodo(todo.id)" title="ลบ">✕</button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+    }
+  </div>
+</main>
