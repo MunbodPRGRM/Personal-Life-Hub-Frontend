@@ -1,0 +1,59 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">PLH</div>
+      <h1>Personal Life Hub</h1>
+      <p>เข้าสู่ระบบเพื่อจัดการชีวิตของคุณ</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form" novalidate>
+      <div class="form-group">
+        <label for="email">อีเมล</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="your@email.com"
+          [class.is-invalid]="emailCtrl.invalid && emailCtrl.touched"
+          autocomplete="email"
+        />
+        @if (emailCtrl.invalid && emailCtrl.touched) {
+          <span class="field-error">กรุณากรอกอีเมลให้ถูกต้อง</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">รหัสผ่าน</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร"
+          [class.is-invalid]="passwordCtrl.invalid && passwordCtrl.touched"
+          autocomplete="current-password"
+        />
+        @if (passwordCtrl.invalid && passwordCtrl.touched) {
+          <span class="field-error">รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร</span>
+        }
+      </div>
+
+      @if (error()) {
+        <div class="error-banner">{{ error() }}</div>
+      }
+
+      <button type="submit" class="btn-primary" [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner"></span>
+          กำลังเข้าสู่ระบบ...
+        } @else {
+          เข้าสู่ระบบ
+        }
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      ยังไม่มีบัญชี?
+      <a routerLink="/register">สมัครสมาชิก</a>
+    </p>
+  </div>
+</div>
