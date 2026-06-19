@@ -1,0 +1,172 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a class="btn-back" routerLink="/dashboard">← หน้าหลัก</a>
+    <span class="navbar-brand">การเงิน</span>
+  </div>
+  <button class="btn-logout" (click)="logout()">ออกจากระบบ</button>
+</nav>
+
+<main class="main">
+  <div class="container">
+
+    <!-- Balance Summary -->
+    @if (!loading()) {
+      <div class="balance-card">
+        <div class="balance-main">
+          <span class="balance-lbl">ยอดคงเหลือ</span>
+          <span class="balance-val" [class.negative]="summary().balance < 0">
+            {{ formatAmount(summary().balance) }} ฿
+          </span>
+        </div>
+        <div class="balance-split">
+          <div class="split-item income">
+            <span class="split-lbl">รายรับ</span>
+            <span class="split-val">+{{ formatAmount(summary().income) }}</span>
+          </div>
+          <div class="split-item expense">
+            <span class="split-lbl">รายจ่าย</span>
+            <span class="split-val">−{{ formatAmount(summary().expense) }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Add Form -->
+    <section class="add-card">
+      <h2 class="section-title">เพิ่มรายการใหม่</h2>
+      <form [formGroup]="addForm" (ngSubmit)="addTransaction()" class="add-form">
+        <div class="type-toggle">
+          <label class="type-opt opt-expense" [class.active]="addForm.get('type')!.value === 'expense'">
+            <input type="radio" formControlName="type" value="expense" hidden />
+            รายจ่าย
+          </label>
+          <label class="type-opt opt-income" [class.active]="addForm.get('type')!.value === 'income'">
+            <input type="radio" formControlName="type" value="income" hidden />
+            รายรับ
+          </label>
+        </div>
+        <div class="add-row">
+          <input
+            formControlName="amount"
+            type="number"
+            step="0.01"
+            min="0"
+            class="input-amount"
+            [class.is-invalid]="addForm.get('amount')!.invalid && addForm.get('amount')!.touched"
+            placeholder="จำนวนเงิน"
+          />
+          <input formControlName="date" type="date" class="input-date" />
+        </div>
+        <div class="add-row">
+          <input
+            formControlName="category"
+            type="text"
+            class="input-category"
+            placeholder="หมวดหมู่ (เช่น อาหาร, เงินเดือน)"
+            autocomplete="off"
+          />
+          <button type="submit" class="btn-add" [disabled]="adding()">
+            @if (adding()) { <span class="spinner"></span> } @else { + เพิ่ม }
+          </button>
+        </div>
+        <textarea
+          formControlName="note"
+          class="input-note"
+          placeholder="โน้ต (ไม่บังคับ)"
+          rows="2"
+        ></textarea>
+        @if (addForm.get('amount')!.invalid && addForm.get('amount')!.touched) {
+          <p class="field-error">กรุณาระบุจำนวนเงินที่มากกว่า 0</p>
+        }
+      </form>
+    </section>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <!-- Type Filter -->
+    <div class="filter-tabs">
+      @for (opt of filterOptions; track opt.value) {
+        <button
+          class="filter-tab tab-{{ opt.value }}"
+          [class.active]="filter() === opt.value"
+          (click)="setFilter(opt.value)"
+        >{{ opt.label }}</button>
+      }
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner spinner-lg"></span>
+        <p>กำลังโหลด...</p>
+      </div>
+    } @else {
+
+      @if (filtered().length === 0) {
+        <div class="empty-state">
+          @if (filter() === 'all') { ยังไม่มีรายการ เริ่มบันทึกรายรับ-รายจ่ายแรกของคุณเลย 💰 }
+          @else { ไม่มีรายการในหมวด "{{ filter() === 'income' ? 'รายรับ' : 'รายจ่าย' }}" }
+        </div>
+      } @else {
+        <div class="tx-list">
+          @for (t of filtered(); track t.id) {
+
+            <!-- Edit mode -->
+            @if (editingId() === t.id) {
+              <div class="tx-card editing">
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(t)" class="edit-form">
+                  <div class="type-toggle">
+                    <label class="type-opt opt-expense" [class.active]="editForm.get('type')!.value === 'expense'">
+                      <input type="radio" formControlName="type" value="expense" hidden />
+                      รายจ่าย
+                    </label>
+                    <label class="type-opt opt-income" [class.active]="editForm.get('type')!.value === 'income'">
+                      <input type="radio" formControlName="type" value="income" hidden />
+                      รายรับ
+                    </label>
+                  </div>
+                  <div class="edit-row">
+                    <input formControlName="amount" type="number" step="0.01" min="0" class="input-amount" placeholder="จำนวนเงิน" />
+                    <input formControlName="date" type="date" class="input-date" />
+                  </div>
+                  <input formControlName="category" type="text" class="input-category full" placeholder="หมวดหมู่" />
+                  <textarea formControlName="note" class="input-note" placeholder="โน้ต..." rows="2"></textarea>
+                  @if (editForm.get('amount')!.invalid && editForm.get('amount')!.touched) {
+                    <p class="field-error">กรุณาระบุจำนวนเงินที่มากกว่า 0</p>
+                  }
+                  <div class="edit-actions">
+                    <button type="submit" class="btn-save">บันทึก</button>
+                    <button type="button" class="btn-cancel" (click)="cancelEdit()">ยกเลิก</button>
+                    <button type="button" class="btn-delete-tx" (click)="deleteTransaction(t.id)">ลบ</button>
+                  </div>
+                </form>
+              </div>
+
+            <!-- View mode -->
+            } @else {
+              <div class="tx-card type-{{ t.type }}">
+                <div class="tx-icon">{{ t.type === 'income' ? '▲' : '▼' }}</div>
+                <div class="tx-body">
+                  <div class="tx-top">
+                    <span class="tx-category">{{ t.category || (t.type === 'income' ? 'รายรับ' : 'รายจ่าย') }}</span>
+                    <span class="tx-amount">{{ t.type === 'income' ? '+' : '−' }}{{ formatAmount(t.amount) }} ฿</span>
+                  </div>
+                  <div class="tx-sub">
+                    <span class="tx-date">{{ formatDate(t.date) }}</span>
+                    @if (t.note) { <span class="tx-note">· {{ t.note }}</span> }
+                  </div>
+                </div>
+                <button class="btn-edit" (click)="startEdit(t)" title="แก้ไข">✎</button>
+              </div>
+            }
+
+          }
+        </div>
+      }
+    }
+
+  </div>
+</main>
