@@ -1,0 +1,420 @@
+// ── Navbar ───────────────────────────────────────────
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-back {
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  text-decoration: none;
+  transition: all 0.15s;
+  &:hover { background: #f3f4f6; color: #374151; }
+}
+
+.navbar-brand {
+  font-size: 1.125rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #10b981, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn-logout {
+  padding: 0.5rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.875rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { border-color: #10b981; color: #059669; background: #f0fdf4; }
+}
+
+// ── Layout ───────────────────────────────────────────
+.main {
+  min-height: calc(100vh - 60px);
+  background: #f3f4f6;
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// ── Add Card ─────────────────────────────────────────
+.add-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.add-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+%input-base {
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: #f9fafb;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus {
+    border-color: #10b981;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+  }
+
+  &.is-invalid { border-color: #ef4444; }
+}
+
+.input-title {
+  @extend %input-base;
+  flex: 1;
+  min-width: 180px;
+}
+
+.select-tag {
+  @extend %input-base;
+  width: 110px;
+  cursor: pointer;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.125rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  cursor: pointer;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:not(:disabled):hover { opacity: 0.88; }
+}
+
+.input-content {
+  @extend %input-base;
+  width: 100%;
+  resize: vertical;
+  min-height: 70px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.field-error {
+  font-size: 0.8125rem;
+  color: #ef4444;
+}
+
+// ── Feedback ─────────────────────────────────────────
+.error-banner {
+  padding: 0.75rem 1rem;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: #b91c1c;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 0;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9375rem;
+  background: #fff;
+  border-radius: 12px;
+}
+
+// ── Filter Tabs ───────────────────────────────────────
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 0.4rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 99px;
+  background: #fff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+// ทั้งหมด — emerald (สีหลักของหน้า)
+.filter-tab.tab-all {
+  &:hover { border-color: #10b981; color: #059669; }
+  &.active { background: #d1fae5; border-color: #10b981; color: #065f46; font-weight: 600; }
+}
+
+// งาน — blue
+.filter-tab.tab-work {
+  &:hover { border-color: #3b82f6; color: #2563eb; }
+  &.active { background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; font-weight: 600; }
+}
+
+// ส่วนตัว — purple
+.filter-tab.tab-personal {
+  &:hover { border-color: #8b5cf6; color: #7c3aed; }
+  &.active { background: #ede9fe; border-color: #8b5cf6; color: #6d28d9; font-weight: 600; }
+}
+
+// เรียน — amber
+.filter-tab.tab-study {
+  &:hover { border-color: #f59e0b; color: #d97706; }
+  &.active { background: #fef3c7; border-color: #f59e0b; color: #b45309; font-weight: 600; }
+}
+
+// อื่น ๆ — gray
+.filter-tab.tab-other {
+  &:hover { border-color: #9ca3af; color: #374151; }
+  &.active { background: #f3f4f6; border-color: #9ca3af; color: #374151; font-weight: 600; }
+}
+
+// ── Notes Grid ────────────────────────────────────────
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+// ── Note Card ─────────────────────────────────────────
+.note-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.125rem 1.25rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+
+  &:not(.editing):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+    border-color: #a7f3d0;
+
+    .note-edit-hint { opacity: 1; }
+  }
+
+  &.editing {
+    cursor: default;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+  }
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.625rem;
+}
+
+.note-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+}
+
+.tag-work     { background: #dbeafe; color: #2563eb; }
+.tag-personal { background: #ede9fe; color: #7c3aed; }
+.tag-study    { background: #fef3c7; color: #d97706; }
+.tag-other    { background: #f3f4f6; color: #6b7280; }
+
+.note-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.note-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.note-content {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-edit-hint {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: #10b981;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+// ── Edit Form ─────────────────────────────────────────
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-input-title {
+  @extend %input-base;
+  width: 100%;
+  font-weight: 600;
+}
+
+.edit-select-tag {
+  @extend %input-base;
+  width: 110px;
+  cursor: pointer;
+}
+
+.edit-input-content {
+  @extend %input-base;
+  width: 100%;
+  resize: vertical;
+  min-height: 100px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.btn-save {
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.88; }
+}
+
+.btn-cancel {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #6b7280;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { border-color: #9ca3af; color: #374151; }
+}
+
+.btn-delete-note {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #ef4444;
+  border: 1.5px solid #fecaca;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { background: #fee2e2; }
+}
+
+// ── Spinner ───────────────────────────────────────────
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+
+  &.spinner-lg {
+    width: 28px;
+    height: 28px;
+    border-color: #e5e7eb;
+    border-top-color: #10b981;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Responsive ───────────────────────────────────────
+@media (max-width: 600px) {
+  .notes-grid { grid-template-columns: 1fr; }
+}

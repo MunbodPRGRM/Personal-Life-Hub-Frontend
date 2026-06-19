@@ -24,5 +24,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/todos/todos.component').then(m => m.TodosComponent)
   },
+  {
+    path: 'notes',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/notes/notes.component').then(m => m.NotesComponent)
+  },
   { path: '**', redirectTo: '/dashboard' }
 ];

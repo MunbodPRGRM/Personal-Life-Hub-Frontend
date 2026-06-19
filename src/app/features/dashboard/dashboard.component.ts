@@ -50,7 +50,7 @@ export class DashboardComponent implements OnInit {
       icon: '📝',
       route: '/notes',
       colorClass: 'emerald',
-      available: false
+      available: true
     },
     {
       title: 'เป้าหมาย',

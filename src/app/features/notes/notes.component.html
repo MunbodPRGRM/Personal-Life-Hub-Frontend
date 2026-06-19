@@ -1,0 +1,135 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a class="btn-back" routerLink="/dashboard">← หน้าหลัก</a>
+    <span class="navbar-brand">บันทึก</span>
+  </div>
+  <button class="btn-logout" (click)="logout()">ออกจากระบบ</button>
+</nav>
+
+<main class="main">
+  <div class="container">
+
+    <!-- Add Form -->
+    <section class="add-card">
+      <h2 class="section-title">เพิ่มบันทึกใหม่</h2>
+      <form [formGroup]="addForm" (ngSubmit)="addNote()" class="add-form">
+        <div class="add-row">
+          <input
+            formControlName="title"
+            type="text"
+            class="input-title"
+            [class.is-invalid]="addForm.get('title')!.invalid && addForm.get('title')!.touched"
+            placeholder="ชื่อบันทึก..."
+            autocomplete="off"
+          />
+          <select formControlName="tags" class="select-tag">
+            <option value="work">งาน</option>
+            <option value="personal">ส่วนตัว</option>
+            <option value="study">เรียน</option>
+            <option value="other">อื่น ๆ</option>
+          </select>
+          <button type="submit" class="btn-add" [disabled]="adding()">
+            @if (adding()) { <span class="spinner"></span> } @else { + เพิ่ม }
+          </button>
+        </div>
+        <textarea
+          formControlName="content"
+          class="input-content"
+          placeholder="เนื้อหา (ไม่บังคับ)"
+          rows="3"
+        ></textarea>
+        @if (addForm.get('title')!.invalid && addForm.get('title')!.touched) {
+          <p class="field-error">กรุณาระบุชื่อบันทึก</p>
+        }
+      </form>
+    </section>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <!-- Tag Filter -->
+    <div class="filter-tabs">
+      @for (opt of tagOptions; track opt.value) {
+        <button
+          class="filter-tab tab-{{ opt.value }}"
+          [class.active]="filter() === opt.value"
+          (click)="setFilter(opt.value)"
+        >{{ opt.label }}</button>
+      }
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner spinner-lg"></span>
+        <p>กำลังโหลด...</p>
+      </div>
+    } @else {
+
+      @if (filtered().length === 0) {
+        <div class="empty-state">
+          @if (filter() === 'all') { ยังไม่มีบันทึก เพิ่มบันทึกแรกของคุณเลย }
+          @else { ไม่มีบันทึกในหมวด "{{ tagLabel(filter()) }}" }
+        </div>
+      } @else {
+        <div class="notes-grid">
+          @for (note of filtered(); track note.id) {
+
+            <!-- Edit mode -->
+            @if (editingId() === note.id) {
+              <div class="note-card editing">
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(note)" class="edit-form">
+                  <input
+                    formControlName="title"
+                    type="text"
+                    class="edit-input-title"
+                    [class.is-invalid]="editForm.get('title')!.invalid && editForm.get('title')!.touched"
+                    placeholder="ชื่อบันทึก..."
+                  />
+                  <select formControlName="tags" class="edit-select-tag">
+                    <option value="work">งาน</option>
+                    <option value="personal">ส่วนตัว</option>
+                    <option value="study">เรียน</option>
+                    <option value="other">อื่น ๆ</option>
+                  </select>
+                  <textarea
+                    formControlName="content"
+                    class="edit-input-content"
+                    placeholder="เนื้อหา..."
+                    rows="5"
+                  ></textarea>
+                  @if (editForm.get('title')!.invalid && editForm.get('title')!.touched) {
+                    <p class="field-error">กรุณาระบุชื่อบันทึก</p>
+                  }
+                  <div class="edit-actions">
+                    <button type="submit" class="btn-save">บันทึก</button>
+                    <button type="button" class="btn-cancel" (click)="cancelEdit()">ยกเลิก</button>
+                    <button type="button" class="btn-delete-note" (click)="deleteNote(note.id)">ลบ</button>
+                  </div>
+                </form>
+              </div>
+
+            <!-- View mode -->
+            } @else {
+              <div class="note-card" (click)="startEdit(note)">
+                <div class="note-header">
+                  <span class="note-tag tag-{{ note.tags }}">{{ tagLabel(note.tags) }}</span>
+                  <span class="note-date">{{ formatDate(note.updated_at) }}</span>
+                </div>
+                <h3 class="note-title">{{ note.title }}</h3>
+                @if (note.content) {
+                  <p class="note-content">{{ note.content }}</p>
+                }
+                <div class="note-edit-hint">คลิกเพื่อแก้ไข</div>
+              </div>
+            }
+
+          }
+        </div>
+      }
+    }
+
+  </div>
+</main>
