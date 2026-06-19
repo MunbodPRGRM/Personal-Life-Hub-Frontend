@@ -152,6 +152,10 @@
 .feature-card.color-emerald .card-icon { background: #d1fae5; color: #059669; }
 .feature-card.color-amber .card-icon { background: #fef3c7; color: #d97706; }
 .feature-card.color-rose .card-icon { background: #fee2e2; color: #e11d48; }
+.feature-card.color-violet:not(.unavailable) {
+  &:hover { border-color: #8b5cf6; }
+}
+.feature-card.color-violet .card-icon { background: #ede9fe; color: #7c3aed; }
 
 .card-icon {
   flex-shrink: 0;
