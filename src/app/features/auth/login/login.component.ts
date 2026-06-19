@@ -35,7 +35,7 @@ export class LoginComponent {
 
     const { email, password } = this.form.value;
     this.auth.login(email!, password!).subscribe({
-      next: () => this.router.navigate(['/todos']),
+      next: () => this.router.navigate(['/dashboard']),
       error: err => {
         this.error.set(err.error?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
         this.loading.set(false);
