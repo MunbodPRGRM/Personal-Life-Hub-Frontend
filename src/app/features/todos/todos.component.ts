@@ -1,11 +1,12 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TodoService, Todo } from '../../core/services/todo.service';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-todos',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.scss'
 })

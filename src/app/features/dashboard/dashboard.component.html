@@ -1,0 +1,59 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <span class="navbar-brand">Personal Life Hub</span>
+  <button class="btn-logout" (click)="logout()">ออกจากระบบ</button>
+</nav>
+
+<!-- Main -->
+<main class="main">
+  <div class="container">
+
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="greeting">
+        <h1 class="greeting-text">
+          สวัสดี@if (username()) {, <span class="username">{{ username() }}</span>} 👋
+        </h1>
+        <p class="greeting-sub">จัดการทุกอย่างในชีวิตของคุณได้จากที่นี่</p>
+      </div>
+
+      @if (todosLoaded() && pendingTodos() > 0) {
+        <div class="summary-chip">
+          <span class="chip-count">{{ pendingTodos() }}</span>
+          <span class="chip-label">งานที่ค้างอยู่</span>
+        </div>
+      }
+    </header>
+
+    <!-- Feature Grid -->
+    <section class="feature-grid">
+      @for (card of features; track card.route) {
+        <div
+          class="feature-card color-{{ card.colorClass }}"
+          [class.unavailable]="!card.available"
+          (click)="navigate(card)"
+          [attr.role]="card.available ? 'link' : 'article'"
+          [attr.tabindex]="card.available ? 0 : -1"
+          (keydown.enter)="navigate(card)"
+        >
+          <div class="card-icon">{{ card.icon }}</div>
+          <div class="card-body">
+            <h2 class="card-title">{{ card.title }}</h2>
+            <p class="card-desc">{{ card.description }}</p>
+          </div>
+
+          @if (card.available) {
+            @if (card.route === '/todos' && todosLoaded() && pendingTodos() > 0) {
+              <span class="card-badge">{{ pendingTodos() }} รายการ</span>
+            } @else {
+              <span class="card-arrow">→</span>
+            }
+          } @else {
+            <span class="card-soon">เร็ว ๆ นี้</span>
+          }
+        </div>
+      }
+    </section>
+
+  </div>
+</main>
