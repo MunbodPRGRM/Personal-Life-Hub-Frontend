@@ -66,7 +66,7 @@ export class DashboardComponent implements OnInit {
       icon: '💰',
       route: '/transactions',
       colorClass: 'rose',
-      available: false
+      available: true
     }
   ];
 
