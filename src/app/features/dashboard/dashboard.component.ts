@@ -40,9 +40,9 @@ export class DashboardComponent implements OnInit {
       title: 'ปฏิทิน',
       description: 'บันทึกนัดหมาย กิจกรรม และเหตุการณ์สำคัญ',
       icon: '📅',
-      route: '/calendar',
+      route: '/events',
       colorClass: 'blue',
-      available: false
+      available: true
     },
     {
       title: 'บันทึก',

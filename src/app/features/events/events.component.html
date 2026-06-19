@@ -1,0 +1,274 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a class="btn-back" routerLink="/dashboard">← หน้าหลัก</a>
+    <span class="navbar-brand">ปฏิทิน</span>
+  </div>
+  <button class="btn-logout" (click)="logout()">ออกจากระบบ</button>
+</nav>
+
+<main class="main">
+  <div class="container">
+
+    <!-- Summary Chips -->
+    @if (!loading() && events().length > 0) {
+      <div class="summary-bar">
+        <div class="summary-chip chip-total">
+          <span class="chip-num">{{ summary().total }}</span>
+          <span class="chip-lbl">ทั้งหมด</span>
+        </div>
+        <div class="summary-chip chip-upcoming">
+          <span class="chip-num">{{ summary().upcoming }}</span>
+          <span class="chip-lbl">กำลังจะมาถึง</span>
+        </div>
+        <div class="summary-chip chip-past">
+          <span class="chip-num">{{ summary().past }}</span>
+          <span class="chip-lbl">ผ่านไปแล้ว</span>
+        </div>
+      </div>
+    }
+
+    <!-- Add Form -->
+    <section class="add-card">
+      <h2 class="section-title">เพิ่มกิจกรรมใหม่</h2>
+      <form [formGroup]="addForm" (ngSubmit)="addEvent()" class="add-form">
+        <div class="add-row">
+          <input
+            formControlName="title"
+            type="text"
+            class="input-title"
+            [class.is-invalid]="addForm.get('title')!.invalid && addForm.get('title')!.touched"
+            placeholder="ชื่อกิจกรรม..."
+            autocomplete="off"
+          />
+        </div>
+        <div class="datetime-row">
+          <label class="dt-field">
+            <span class="dt-label">เริ่ม</span>
+            <input
+              formControlName="start_datetime"
+              type="datetime-local"
+              class="input-datetime"
+              [class.is-invalid]="addForm.get('start_datetime')!.invalid && addForm.get('start_datetime')!.touched"
+            />
+          </label>
+          <label class="dt-field">
+            <span class="dt-label">สิ้นสุด</span>
+            <input formControlName="end_datetime" type="datetime-local" class="input-datetime" />
+          </label>
+          <button type="submit" class="btn-add" [disabled]="adding()">
+            @if (adding()) { <span class="spinner"></span> } @else { + เพิ่ม }
+          </button>
+        </div>
+        <div class="color-row">
+          <span class="color-label">สี:</span>
+          @for (c of colors; track c) {
+            <button
+              type="button"
+              class="color-dot"
+              [class.selected]="addForm.get('color')!.value === c"
+              [style.background]="c"
+              (click)="pickColor('add', c)"
+              [attr.aria-label]="'เลือกสี ' + c"
+            ></button>
+          }
+        </div>
+        <textarea
+          formControlName="description"
+          class="input-desc"
+          placeholder="รายละเอียด (ไม่บังคับ)"
+          rows="2"
+        ></textarea>
+        @if (addForm.get('title')!.invalid && addForm.get('title')!.touched) {
+          <p class="field-error">กรุณาระบุชื่อกิจกรรม</p>
+        }
+        @if (addForm.get('start_datetime')!.invalid && addForm.get('start_datetime')!.touched) {
+          <p class="field-error">กรุณาระบุวันเวลาเริ่มต้น</p>
+        }
+      </form>
+    </section>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <!-- View Toggle -->
+    <div class="view-toggle">
+      <button class="view-btn" [class.active]="view() === 'calendar'" (click)="setView('calendar')">📅 ปฏิทิน</button>
+      <button class="view-btn" [class.active]="view() === 'list'" (click)="setView('list')">☰ รายการ</button>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner spinner-lg"></span>
+        <p>กำลังโหลด...</p>
+      </div>
+    } @else {
+
+      <!-- ════════ CALENDAR VIEW ════════ -->
+      @if (view() === 'calendar') {
+        <section class="cal-card">
+          <div class="cal-header">
+            <button class="cal-nav" (click)="prevMonth()" aria-label="เดือนก่อนหน้า">‹</button>
+            <div class="cal-title-wrap">
+              <h2 class="cal-title">{{ monthLabel() }}</h2>
+              <button class="btn-today" (click)="goToday()">วันนี้</button>
+            </div>
+            <button class="cal-nav" (click)="nextMonth()" aria-label="เดือนถัดไป">›</button>
+          </div>
+
+          <div class="cal-grid">
+            @for (wd of weekdays; track wd) {
+              <div class="cal-weekday">{{ wd }}</div>
+            }
+            @for (week of calendar(); track $index) {
+              @for (cell of week; track cell.key) {
+                <button
+                  type="button"
+                  class="cal-cell"
+                  [class.out-month]="!cell.inMonth"
+                  [class.today]="cell.isToday"
+                  [class.selected]="cell.key === selectedKey()"
+                  (click)="selectDay(cell)"
+                >
+                  <span class="cell-day">{{ cell.day }}</span>
+                  @if (cell.events.length) {
+                    <span class="cell-events">
+                      @for (ev of cell.events.slice(0, 3); track ev.id) {
+                        <span class="cell-dot" [style.background]="ev.color"></span>
+                      }
+                      @if (cell.events.length > 3) {
+                        <span class="cell-more">+{{ cell.events.length - 3 }}</span>
+                      }
+                    </span>
+                  }
+                </button>
+              }
+            }
+          </div>
+        </section>
+
+        <!-- Selected day panel -->
+        <section class="day-panel">
+          <div class="day-panel-head">
+            <h3 class="day-panel-title">{{ selectedLabel() }}</h3>
+            <button class="btn-add-day" (click)="addOnSelectedDay()">+ เพิ่มในวันนี้</button>
+          </div>
+          @if (selectedEvents().length === 0) {
+            <div class="empty-state small">ไม่มีกิจกรรมในวันนี้</div>
+          } @else {
+            <div class="events-list">
+              @for (ev of selectedEvents(); track ev.id) {
+                <ng-container [ngTemplateOutlet]="eventCard" [ngTemplateOutletContext]="{ $implicit: ev }"></ng-container>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ════════ LIST VIEW ════════ -->
+      @if (view() === 'list') {
+        <div class="filter-tabs">
+          @for (opt of filterOptions; track opt.value) {
+            <button
+              class="filter-tab tab-{{ opt.value }}"
+              [class.active]="filter() === opt.value"
+              (click)="setFilter(opt.value)"
+            >{{ opt.label }}</button>
+          }
+        </div>
+
+        @if (filtered().length === 0) {
+          <div class="empty-state">
+            @if (filter() === 'all') { ยังไม่มีกิจกรรม เพิ่มนัดหมายแรกของคุณเลย 📅 }
+            @else { ไม่มีกิจกรรมในหมวด "{{ filterLabel(filter()) }}" }
+          </div>
+        } @else {
+          <div class="events-list">
+            @for (ev of filtered(); track ev.id) {
+              <ng-container [ngTemplateOutlet]="eventCard" [ngTemplateOutletContext]="{ $implicit: ev }"></ng-container>
+            }
+          </div>
+        }
+      }
+    }
+
+  </div>
+</main>
+
+<!-- ════════ Shared event card (view + edit) ════════ -->
+<ng-template #eventCard let-ev>
+  @if (editingId() === ev.id) {
+    <div class="event-card editing">
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit(ev)" class="edit-form">
+        <div class="edit-row">
+          <input
+            formControlName="title"
+            type="text"
+            class="edit-input-title"
+            [class.is-invalid]="editForm.get('title')!.invalid && editForm.get('title')!.touched"
+            placeholder="ชื่อกิจกรรม..."
+          />
+        </div>
+        <div class="datetime-row">
+          <label class="dt-field">
+            <span class="dt-label">เริ่ม</span>
+            <input formControlName="start_datetime" type="datetime-local" class="input-datetime" />
+          </label>
+          <label class="dt-field">
+            <span class="dt-label">สิ้นสุด</span>
+            <input formControlName="end_datetime" type="datetime-local" class="input-datetime" />
+          </label>
+        </div>
+        <div class="color-row">
+          <span class="color-label">สี:</span>
+          @for (c of colors; track c) {
+            <button
+              type="button"
+              class="color-dot"
+              [class.selected]="editForm.get('color')!.value === c"
+              [style.background]="c"
+              (click)="pickColor('edit', c)"
+              [attr.aria-label]="'เลือกสี ' + c"
+            ></button>
+          }
+        </div>
+        <textarea
+          formControlName="description"
+          class="edit-input-desc"
+          placeholder="รายละเอียด..."
+          rows="3"
+        ></textarea>
+        @if (editForm.get('title')!.invalid && editForm.get('title')!.touched) {
+          <p class="field-error">กรุณาระบุชื่อกิจกรรม</p>
+        }
+        <div class="edit-actions">
+          <button type="submit" class="btn-save">บันทึก</button>
+          <button type="button" class="btn-cancel" (click)="cancelEdit()">ยกเลิก</button>
+          <button type="button" class="btn-delete-event" (click)="deleteEvent(ev.id)">ลบ</button>
+        </div>
+      </form>
+    </div>
+  } @else {
+    <div class="event-card" [class.is-past]="!isUpcoming(ev)">
+      <div class="event-color-bar" [style.background]="ev.color"></div>
+      <div class="event-body">
+        <div class="event-meta">
+          <span class="time-badge" [class.upcoming]="isUpcoming(ev)">
+            {{ isUpcoming(ev) ? 'กำลังจะมาถึง' : 'ผ่านไปแล้ว' }}
+          </span>
+          <span class="start-badge">{{ formatDateTime(ev.start_datetime) }}</span>
+          @if (ev.end_datetime) {
+            <span class="range-badge">ถึง {{ formatDateTime(ev.end_datetime) }}</span>
+          }
+        </div>
+        <h3 class="event-title">{{ ev.title }}</h3>
+        @if (ev.description) {
+          <p class="event-desc">{{ ev.description }}</p>
+        }
+      </div>
+      <button class="btn-edit" (click)="startEdit(ev)" title="แก้ไข">✎</button>
+    </div>
+  }
+</ng-template>
