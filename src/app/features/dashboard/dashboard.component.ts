@@ -58,7 +58,7 @@ export class DashboardComponent implements OnInit {
       icon: '🎯',
       route: '/goals',
       colorClass: 'amber',
-      available: false
+      available: true
     },
     {
       title: 'การเงิน',

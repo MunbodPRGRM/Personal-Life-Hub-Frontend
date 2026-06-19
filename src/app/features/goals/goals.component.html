@@ -1,0 +1,187 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a class="btn-back" routerLink="/dashboard">← หน้าหลัก</a>
+    <span class="navbar-brand">เป้าหมาย</span>
+  </div>
+  <button class="btn-logout" (click)="logout()">ออกจากระบบ</button>
+</nav>
+
+<main class="main">
+  <div class="container">
+
+    <!-- Summary Chips -->
+    @if (!loading() && goals().length > 0) {
+      <div class="summary-bar">
+        <div class="summary-chip chip-total">
+          <span class="chip-num">{{ summary().total }}</span>
+          <span class="chip-lbl">ทั้งหมด</span>
+        </div>
+        <div class="summary-chip chip-active">
+          <span class="chip-num">{{ summary().active }}</span>
+          <span class="chip-lbl">กำลังทำ</span>
+        </div>
+        <div class="summary-chip chip-completed">
+          <span class="chip-num">{{ summary().completed }}</span>
+          <span class="chip-lbl">สำเร็จ</span>
+        </div>
+        <div class="summary-chip chip-cancelled">
+          <span class="chip-num">{{ summary().cancelled }}</span>
+          <span class="chip-lbl">ยกเลิก</span>
+        </div>
+      </div>
+    }
+
+    <!-- Add Form -->
+    <section class="add-card">
+      <h2 class="section-title">เพิ่มเป้าหมายใหม่</h2>
+      <form [formGroup]="addForm" (ngSubmit)="addGoal()" class="add-form">
+        <div class="add-row">
+          <input
+            formControlName="title"
+            type="text"
+            class="input-title"
+            [class.is-invalid]="addForm.get('title')!.invalid && addForm.get('title')!.touched"
+            placeholder="ชื่อเป้าหมาย..."
+            autocomplete="off"
+          />
+          <input formControlName="target_date" type="date" class="input-date" />
+          <select formControlName="status" class="select-status">
+            <option value="active">กำลังทำ</option>
+            <option value="completed">สำเร็จแล้ว</option>
+            <option value="cancelled">ยกเลิก</option>
+          </select>
+          <button type="submit" class="btn-add" [disabled]="adding()">
+            @if (adding()) { <span class="spinner"></span> } @else { + เพิ่ม }
+          </button>
+        </div>
+        <textarea
+          formControlName="description"
+          class="input-desc"
+          placeholder="รายละเอียด (ไม่บังคับ)"
+          rows="2"
+        ></textarea>
+        <div class="progress-row">
+          <label class="progress-label">ความคืบหน้า: {{ addForm.get('progress')!.value }}%</label>
+          <input formControlName="progress" type="range" min="0" max="100" step="5" class="range-slider" />
+        </div>
+        @if (addForm.get('title')!.invalid && addForm.get('title')!.touched) {
+          <p class="field-error">กรุณาระบุชื่อเป้าหมาย</p>
+        }
+      </form>
+    </section>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <!-- Status Filter -->
+    <div class="filter-tabs">
+      @for (opt of statusOptions; track opt.value) {
+        <button
+          class="filter-tab tab-{{ opt.value }}"
+          [class.active]="filter() === opt.value"
+          (click)="setFilter(opt.value)"
+        >{{ opt.label }}</button>
+      }
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner spinner-lg"></span>
+        <p>กำลังโหลด...</p>
+      </div>
+    } @else {
+
+      @if (filtered().length === 0) {
+        <div class="empty-state">
+          @if (filter() === 'all') { ยังไม่มีเป้าหมาย ตั้งเป้าหมายแรกของคุณเลย 🎯 }
+          @else { ไม่มีเป้าหมายในสถานะ "{{ statusLabel(filter()) }}" }
+        </div>
+      } @else {
+        <div class="goals-list">
+          @for (goal of filtered(); track goal.id) {
+
+            <!-- Edit mode -->
+            @if (editingId() === goal.id) {
+              <div class="goal-card editing">
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(goal)" class="edit-form">
+                  <div class="edit-row">
+                    <input
+                      formControlName="title"
+                      type="text"
+                      class="edit-input-title"
+                      [class.is-invalid]="editForm.get('title')!.invalid && editForm.get('title')!.touched"
+                      placeholder="ชื่อเป้าหมาย..."
+                    />
+                    <input formControlName="target_date" type="date" class="edit-input-date" />
+                    <select formControlName="status" class="edit-select-status">
+                      <option value="active">กำลังทำ</option>
+                      <option value="completed">สำเร็จแล้ว</option>
+                      <option value="cancelled">ยกเลิก</option>
+                    </select>
+                  </div>
+                  <textarea
+                    formControlName="description"
+                    class="edit-input-desc"
+                    placeholder="รายละเอียด..."
+                    rows="3"
+                  ></textarea>
+                  <div class="progress-row">
+                    <label class="progress-label">ความคืบหน้า: {{ editForm.get('progress')!.value }}%</label>
+                    <input formControlName="progress" type="range" min="0" max="100" step="5" class="range-slider" />
+                  </div>
+                  @if (editForm.get('title')!.invalid && editForm.get('title')!.touched) {
+                    <p class="field-error">กรุณาระบุชื่อเป้าหมาย</p>
+                  }
+                  <div class="edit-actions">
+                    <button type="submit" class="btn-save">บันทึก</button>
+                    <button type="button" class="btn-cancel" (click)="cancelEdit()">ยกเลิก</button>
+                    <button type="button" class="btn-delete-goal" (click)="deleteGoal(goal.id)">ลบ</button>
+                  </div>
+                </form>
+              </div>
+
+            <!-- View mode -->
+            } @else {
+              <div class="goal-card" [class.is-done]="goal.status === 'completed'" [class.is-overdue]="isOverdue(goal)">
+                <div class="goal-top">
+                  <div class="goal-info">
+                    <div class="goal-meta">
+                      <span class="status-badge status-{{ goal.status }}">{{ statusLabel(goal.status) }}</span>
+                      @if (goal.target_date) {
+                        <span class="date-badge" [class.overdue]="isOverdue(goal)">
+                          {{ formatDate(goal.target_date) }}{{ isOverdue(goal) ? ' · เกินกำหนด' : '' }}
+                        </span>
+                      }
+                    </div>
+                    <h3 class="goal-title">{{ goal.title }}</h3>
+                    @if (goal.description) {
+                      <p class="goal-desc">{{ goal.description }}</p>
+                    }
+                  </div>
+                  <button class="btn-edit" (click)="startEdit(goal)" title="แก้ไข">✎</button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-section">
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill status-fill-{{ goal.status }}" [style.width.%]="goal.progress"></div>
+                  </div>
+                  <div class="progress-controls">
+                    <button class="btn-prog" (click)="quickProgress(goal, goal.progress - 10)" [disabled]="goal.progress <= 0">−</button>
+                    <span class="progress-pct">{{ goal.progress }}%</span>
+                    <button class="btn-prog" (click)="quickProgress(goal, goal.progress + 10)" [disabled]="goal.progress >= 100">+</button>
+                  </div>
+                </div>
+              </div>
+            }
+
+          }
+        </div>
+      }
+    }
+
+  </div>
+</main>
