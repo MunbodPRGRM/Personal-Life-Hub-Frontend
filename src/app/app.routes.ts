@@ -25,6 +25,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/todos/todos.component').then(m => m.TodosComponent)
   },
   {
+    path: 'events',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/events/events.component').then(m => m.EventsComponent)
+  },
+  {
     path: 'notes',
     canActivate: [authGuard],
     loadComponent: () => import('./features/notes/notes.component').then(m => m.NotesComponent)
