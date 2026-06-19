@@ -67,6 +67,14 @@ export class DashboardComponent implements OnInit {
       route: '/transactions',
       colorClass: 'rose',
       available: true
+    },
+    {
+      title: 'การแจ้งเตือน',
+      description: 'ตั้งเตือนงาน กิจกรรม และเป้าหมายไม่ให้พลาด',
+      icon: '🔔',
+      route: '/reminders',
+      colorClass: 'violet',
+      available: true
     }
   ];
 

@@ -1,0 +1,163 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a class="btn-back" routerLink="/dashboard">← หน้าหลัก</a>
+    <span class="navbar-brand">การแจ้งเตือน</span>
+  </div>
+  <button class="btn-logout" (click)="logout()">ออกจากระบบ</button>
+</nav>
+
+<main class="main">
+  <div class="container">
+
+    <!-- Summary Chips -->
+    @if (!loading() && reminders().length > 0) {
+      <div class="summary-bar">
+        <div class="summary-chip chip-total">
+          <span class="chip-num">{{ summary().total }}</span>
+          <span class="chip-lbl">ทั้งหมด</span>
+        </div>
+        <div class="summary-chip chip-pending">
+          <span class="chip-num">{{ summary().pending }}</span>
+          <span class="chip-lbl">รอแจ้งเตือน</span>
+        </div>
+        <div class="summary-chip chip-sent">
+          <span class="chip-num">{{ summary().sent }}</span>
+          <span class="chip-lbl">แจ้งแล้ว</span>
+        </div>
+      </div>
+    }
+
+    <!-- Add Form -->
+    <section class="add-card">
+      <h2 class="section-title">ตั้งการแจ้งเตือนใหม่</h2>
+      <form [formGroup]="addForm" (ngSubmit)="addReminder()" class="add-form">
+        <div class="add-row">
+          <select formControlName="ref_type" class="select-type">
+            @for (opt of refTypeOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.icon }} {{ opt.label }}</option>
+            }
+          </select>
+          <select
+            formControlName="ref_id"
+            class="select-ref"
+            [class.is-invalid]="addForm.get('ref_id')!.invalid && addForm.get('ref_id')!.touched"
+          >
+            <option [ngValue]="null" disabled>— เลือกรายการ —</option>
+            @for (item of addRefOptions(); track item.id) {
+              <option [ngValue]="item.id">{{ item.title }}</option>
+            }
+          </select>
+        </div>
+        @if (addRefOptions().length === 0) {
+          <p class="hint">ยังไม่มี{{ refLabel(addRefType()) }}ให้เลือก สร้างก่อนแล้วค่อยมาตั้งแจ้งเตือน</p>
+        }
+        <div class="add-row">
+          <input
+            formControlName="remind_at"
+            type="datetime-local"
+            class="input-datetime"
+            [class.is-invalid]="addForm.get('remind_at')!.invalid && addForm.get('remind_at')!.touched"
+          />
+          <button type="submit" class="btn-add" [disabled]="adding()">
+            @if (adding()) { <span class="spinner"></span> } @else { + เพิ่ม }
+          </button>
+        </div>
+        @if (addForm.get('ref_id')!.invalid && addForm.get('ref_id')!.touched) {
+          <p class="field-error">กรุณาเลือกรายการที่ต้องการแจ้งเตือน</p>
+        }
+        @if (addForm.get('remind_at')!.invalid && addForm.get('remind_at')!.touched) {
+          <p class="field-error">กรุณาระบุวันเวลาแจ้งเตือน</p>
+        }
+      </form>
+    </section>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <!-- Status Filter -->
+    <div class="filter-tabs">
+      @for (opt of filterOptions; track opt.value) {
+        <button
+          class="filter-tab tab-{{ opt.value }}"
+          [class.active]="filter() === opt.value"
+          (click)="setFilter(opt.value)"
+        >{{ opt.label }}</button>
+      }
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner spinner-lg"></span>
+        <p>กำลังโหลด...</p>
+      </div>
+    } @else {
+
+      @if (filtered().length === 0) {
+        <div class="empty-state">
+          @if (filter() === 'all') { ยังไม่มีการแจ้งเตือน ตั้งการแจ้งเตือนแรกของคุณเลย 🔔 }
+          @else { ไม่มีการแจ้งเตือนในหมวดนี้ }
+        </div>
+      } @else {
+        <div class="reminders-list">
+          @for (r of filtered(); track r.id) {
+
+            <!-- Edit mode -->
+            @if (editingId() === r.id) {
+              <div class="reminder-card editing">
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(r)" class="edit-form">
+                  <div class="edit-row">
+                    <select formControlName="ref_type" class="select-type">
+                      @for (opt of refTypeOptions; track opt.value) {
+                        <option [value]="opt.value">{{ opt.icon }} {{ opt.label }}</option>
+                      }
+                    </select>
+                    <select formControlName="ref_id" class="select-ref">
+                      <option [ngValue]="null" disabled>— เลือกรายการ —</option>
+                      @for (item of editRefOptions(); track item.id) {
+                        <option [ngValue]="item.id">{{ item.title }}</option>
+                      }
+                    </select>
+                  </div>
+                  <input formControlName="remind_at" type="datetime-local" class="input-datetime full" />
+                  <div class="edit-actions">
+                    <button type="submit" class="btn-save">บันทึก</button>
+                    <button type="button" class="btn-cancel" (click)="cancelEdit()">ยกเลิก</button>
+                    <button type="button" class="btn-delete-reminder" (click)="deleteReminder(r.id)">ลบ</button>
+                  </div>
+                </form>
+              </div>
+
+            <!-- View mode -->
+            } @else {
+              <div class="reminder-card" [class.is-sent]="isSent(r)" [class.is-overdue]="isOverdue(r)">
+                <button
+                  class="check-btn"
+                  [class.checked]="isSent(r)"
+                  (click)="toggleSent(r)"
+                  [title]="isSent(r) ? 'ทำเครื่องหมายว่ายังไม่แจ้ง' : 'ทำเครื่องหมายว่าแจ้งแล้ว'"
+                >{{ isSent(r) ? '✓' : '' }}</button>
+
+                <div class="reminder-body">
+                  <div class="reminder-meta">
+                    <span class="ref-badge ref-{{ r.ref_type }}">{{ refIcon(r.ref_type) }} {{ refLabel(r.ref_type) }}</span>
+                    <span class="time-badge" [class.overdue]="isOverdue(r)" [class.done]="isSent(r)">
+                      {{ formatDateTime(r.remind_at) }}{{ isOverdue(r) ? ' · เลยกำหนด' : '' }}
+                    </span>
+                  </div>
+                  <h3 class="reminder-title">{{ r.ref_title || '(รายการถูกลบแล้ว)' }}</h3>
+                </div>
+
+                <button class="btn-edit" (click)="startEdit(r)" title="แก้ไข">✎</button>
+              </div>
+            }
+
+          }
+        </div>
+      }
+    }
+
+  </div>
+</main>
